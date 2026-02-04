@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { extractRepairData, createSlug, standardizeProblemType } from "@/lib/ai-extractor";
-
+import { getVideoTranscript } from "@/lib/youtube";
 import { RepairStatus } from "@/generated/prisma/client";
 
 /**
@@ -12,7 +12,7 @@ import { RepairStatus } from "@/generated/prisma/client";
  */
 export async function POST(
   request: Request,
-  { params }: { params: { videoId: string } }
+  { params }: { params: Promise<{ videoId: string }> }
 ) {
   try {
     const session = await auth();
@@ -22,7 +22,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const videoId = params.videoId;
+    const { videoId } = await params;
 
     // Get video from database
     const video = await prisma.video.findUnique({
@@ -34,13 +34,34 @@ export async function POST(
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }
 
+    // Fetch transcript if missing
+    let transcript = video.transcript;
+    if (!transcript) {
+      console.log(`Fetching transcript for video: ${video.youtubeId}`);
+      try {
+        transcript = await getVideoTranscript(video.youtubeId);
+        if (transcript) {
+          // Save transcript to database
+          await prisma.video.update({
+            where: { id: video.id },
+            data: { transcript },
+          });
+          console.log("Transcript fetched and saved");
+        } else {
+          console.log("No transcript available");
+        }
+      } catch (error) {
+        console.error("Error fetching transcript:", error);
+      }
+    }
+
     console.log(`Extracting repair data for video: ${video.title}`);
 
     // Extract repair data using AI
     const extracted = await extractRepairData(
       video.title,
       video.description || undefined,
-      video.transcript || undefined
+      transcript || undefined
     );
 
     console.log("Extracted data:", extracted);

@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Adapter, AdapterUser } from "next-auth/adapters";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
+import { authConfig } from "@/auth.config";
 
 // Extend the PrismaAdapter to handle the custom 'role' field
 const customAdapter = {
@@ -29,12 +30,10 @@ const customAdapter = {
 } as unknown as Adapter;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: customAdapter,
   session: {
     strategy: "jwt",
-  },
-  pages: {
-    signIn: "/login",
   },
   providers: [
     Google({
@@ -75,20 +74,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role;
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.role = token.role as "USER" | "ADMIN";
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
 });

@@ -1,23 +1,18 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  const session = await auth();
+const { auth } = NextAuth(authConfig);
 
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    if (!session) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-
-    if (session.user?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", request.url));
+export default auth((req) => {
+  // Protect admin routes with role check
+  if (req.nextUrl.pathname.startsWith("/admin")) {
+    const role = req.auth?.user?.role;
+    if (role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", req.url));
     }
   }
-
-  return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ["/admin/:path*"],
