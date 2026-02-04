@@ -2,11 +2,34 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { Adapter, AdapterUser } from "next-auth/adapters";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
 
+// Extend the PrismaAdapter to handle the custom 'role' field
+const customAdapter = {
+  ...PrismaAdapter(prisma),
+  async createUser(user: AdapterUser) {
+    const prismaUser = await prisma.user.create({
+      data: {
+        ...user,
+        role: "USER", // Set default role for new users
+      },
+    });
+    // Return the fields including the custom role field
+    return {
+      id: prismaUser.id,
+      email: prismaUser.email,
+      emailVerified: prismaUser.emailVerified,
+      name: prismaUser.name,
+      image: prismaUser.image,
+      role: prismaUser.role,
+    };
+  },
+} as unknown as Adapter;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: customAdapter,
   session: {
     strategy: "jwt",
   },
