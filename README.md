@@ -1,36 +1,190 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LaptopFixDB
+
+A searchable database of laptop repair solutions powered by AI, featuring 1,500+ repair videos from Electronics Repair School.
+
+## Overview
+
+LaptopFixDB is a Next.js web application that helps technicians and DIY enthusiasts find laptop repair solutions quickly. It uses AI-powered extraction to analyze repair videos and create a structured, searchable database of troubleshooting steps and solutions.
+
+## Features
+
+### 🔍 Smart Search
+- Search by laptop brand (Dell, HP, Lenovo, MSI, Asus, Apple, etc.)
+- Filter by specific model
+- Browse by problem type (No Power, Not Charging, No Display, Liquid Damage, etc.)
+
+### 🎥 Video Integration
+- Direct YouTube video embedding
+- Automatic video synchronization from Electronics Repair School channel
+- Transcript extraction for detailed analysis
+
+### 🤖 AI-Powered Extraction
+- Automatic extraction of repair data using Google Gemini AI
+- Analyzes video transcripts (up to 15,000 characters)
+- Extracts:
+  - Laptop brand and model
+  - Problem type classification
+  - Detailed troubleshooting steps with technical measurements
+  - Comprehensive solutions with specific component details
+  - Confidence scoring for data quality
+
+### 👤 User Authentication
+- Secure authentication with NextAuth.js
+- Role-based access control (Admin/User)
+- Admin panel for managing repairs and extractions
+
+### 📊 Admin Dashboard
+- Video management and synchronization
+- Manual and batch AI extraction
+- Statistics and analytics
+- Repair approval workflow
+
+## Tech Stack
+
+- **Framework:** Next.js 16 with App Router
+- **Database:** PostgreSQL with Prisma ORM
+- **Authentication:** NextAuth.js v5 with Prisma Adapter
+- **AI:** Google Gemini 2.5 Flash
+- **Styling:** Tailwind CSS v4
+- **APIs:** YouTube Data API v3, YouTube Transcript API
+- **TypeScript:** Full type safety
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 20+ 
+- PostgreSQL database
+- Google API credentials (for YouTube Data API)
+- Google Gemini API key
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/laptopfixdb"
+
+# NextAuth
+AUTH_SECRET="your-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Google APIs
+GOOGLE_API_KEY="your-google-api-key"
+GEMINI_API_KEY="your-gemini-api-key"
+
+# YouTube Channel
+YOUTUBE_CHANNEL_ID="UCR_AT7RN13WXLVKPUXWzzbw"  # Electronics Repair School
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd labtop-fix-db
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. **Set up the database**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Sync videos from YouTube** (Optional)
+   - Navigate to `/api/videos/sync` (requires Admin access)
+   - Or run the cron job at `/api/cron/sync-videos`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+6. **Open the app**
+   - Navigate to [http://localhost:3000](http://localhost:3000)
 
-## Deploy on Vercel
+### First-Time Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Create an admin account through the register page
+2. Manually set your user role to `ADMIN` in the database
+3. Use the admin panel to sync videos and extract repair data
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+├── app/                      # Next.js App Router
+│   ├── api/                  # API routes
+│   │   ├── auth/             # Authentication endpoints
+│   │   ├── extract/          # AI extraction endpoints
+│   │   ├── videos/           # Video management
+│   │   └── cron/             # Scheduled jobs
+│   ├── admin/                # Admin dashboard
+│   ├── repairs/              # Repair browsing pages
+│   └── page.tsx              # Home page
+├── components/               # React components
+├── lib/                      # Utility libraries
+│   ├── ai-extractor.ts       # AI extraction logic
+│   ├── youtube.ts            # YouTube API integration
+│   ├── auth.ts               # Authentication config
+│   └── prisma.ts             # Prisma client
+├── prisma/                   # Database schema and migrations
+└── generated/                # Prisma client generation
+```
+
+## Usage
+
+### For Users
+1. Visit the home page
+2. Search for repairs by brand, model, or problem type
+3. View detailed repair information with embedded videos
+4. Watch troubleshooting steps and solutions
+
+### For Admins
+1. Log in with admin credentials
+2. Navigate to `/admin`
+3. Sync new videos from YouTube
+4. Extract repair data using AI (single or batch)
+5. Review and approve extracted data
+
+## AI Extraction Quality
+
+The AI extraction system uses advanced prompting to extract high-quality repair data:
+
+- **Transcript Analysis:** Uses up to 15,000 characters of video transcript
+- **Technical Details:** Extracts voltages, component names, part numbers
+- **Step-by-Step Format:** Organizes troubleshooting into clear steps
+- **Confidence Scoring:** Rates extraction quality as high/medium/low
+- **Smart Categorization:** Standardizes problem types across videos
+
+## Database Schema
+
+Key models:
+- **Video:** YouTube video metadata and transcripts
+- **Repair:** Extracted repair information
+- **Brand:** Laptop manufacturers
+- **Model:** Specific laptop models
+- **ProblemType:** Categorized repair issues
+- **User:** Authentication and authorization
+
+## API Routes
+
+- `GET /api/videos` - List videos
+- `POST /api/videos/sync` - Sync from YouTube
+- `POST /api/extract/[videoId]` - Extract single video
+- `POST /api/extract/batch` - Batch extraction
+- `GET /api/repairs` - Search repairs
+- `GET /api/admin/stats` - Admin statistics
+
+## Credits
+
+Video content by [Electronics Repair School](https://www.youtube.com/@electronicsrepairschool) (Sorin)
+
+## License
+
+This project is for educational purposes. All video content belongs to their respective owners.
