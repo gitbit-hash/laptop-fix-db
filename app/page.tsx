@@ -64,7 +64,7 @@ export default function HomePage() {
       </div>
 
       {/* Quick Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
             Browse by Problem Type

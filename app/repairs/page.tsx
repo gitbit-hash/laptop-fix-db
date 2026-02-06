@@ -162,7 +162,7 @@ export default function RepairsPage() {
                   }
                 }}
                 placeholder="Brand, model, problem..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -176,7 +176,7 @@ export default function RepairsPage() {
                   setFilters({ ...filters, brand: e.target.value });
                   updateFilters("brand", e.target.value);
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Brands</option>
                 {brands.map((brand) => (
@@ -197,7 +197,7 @@ export default function RepairsPage() {
                   setFilters({ ...filters, problem: e.target.value });
                   updateFilters("problem", e.target.value);
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full text-gray-600 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Problems</option>
                 {problemTypes.map((type) => (
@@ -291,8 +291,8 @@ export default function RepairsPage() {
                       key={page}
                       onClick={() => updateFilters("page", page.toString())}
                       className={`px-4 py-2 rounded-lg ${page === pagination.page
-                          ? "bg-blue-600 text-white"
-                          : "bg-white text-gray-700 hover:bg-gray-100"
+                        ? "bg-blue-600 text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-100"
                         }`}
                     >
                       {page}

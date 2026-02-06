@@ -108,7 +108,7 @@ export default function EditRepairPage() {
         </button>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-2 gap-8 text-gray-900">
         {/* Video Preview */}
         <div>
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -118,8 +118,8 @@ export default function EditRepairPage() {
           </div>
 
           {/* Current Data */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4">Extracted Data</h2>
+          <div className="bg-white text-gray-700 rounded-lg shadow-sm p-6">
+            <h2 className="text-lg text-gray-900 font-semibold mb-4">Extracted Data</h2>
             <div className="space-y-3 text-sm">
               <div>
                 <span className="text-gray-600">Brand/Model:</span>
@@ -140,10 +140,10 @@ export default function EditRepairPage() {
         </div>
 
         {/* Edit Form */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white text-gray-700 rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4">Edit Details</h2>
 
-          <div className="space-y-4">
+          <div className="space-y-4 text-gray-700">
             {/* Status */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -170,7 +170,7 @@ export default function EditRepairPage() {
                   setFormData({ ...formData, troubleshooting: e.target.value })
                 }
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Describe the troubleshooting steps..."
               />
             </div>
