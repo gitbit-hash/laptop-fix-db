@@ -1,8 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PrismaClient } from "@/generated/prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 type Props = {
   params: { id: string };
@@ -129,8 +127,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: "Laptop Repair Guide",
       description: "Detailed laptop repair troubleshooting and solutions.",
     };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

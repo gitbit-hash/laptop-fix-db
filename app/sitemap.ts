@@ -1,7 +1,5 @@
 import { MetadataRoute } from "next";
-import { PrismaClient } from "@/generated/prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -45,7 +43,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch (error) {
     console.error("Error generating sitemap:", error);
     return staticRoutes;
-  } finally {
-    await prisma.$disconnect();
   }
 }
