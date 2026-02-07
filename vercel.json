@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/sync-videos",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/check-video-health",
+      "schedule": "0 3 * * *"
     }
   ]
 }

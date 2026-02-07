@@ -104,18 +104,52 @@ model ProblemType {
 }
 
 model Video {
+  id                  String                 @id @default(cuid())
+  youtubeId           String                 @unique
+  title               String
+  description         String?                @db.Text
+  thumbnailUrl        String?
+  duration            String?
+  publishedAt         DateTime
+  transcript          String?                @db.Text
+  processed           Boolean                @default(false)
+  
+  // Health monitoring fields
+  status              VideoStatus            @default(ACTIVE)
+  lastCheckedAt       DateTime?
+  unavailableAt       DateTime?
+  unavailableReason   String?
+  
+  // Relations
+  repair              Repair?
+  metadataHistory     VideoMetadataHistory[]
+  
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+}
+
+enum VideoStatus {
+  ACTIVE       // Video is available and working
+  PRIVATE      // Video made private by owner
+  DELETED      // Video deleted from YouTube
+  BLOCKED      // Region blocked or embedding disabled
+  UNAVAILABLE  // Other availability issues
+}
+
+model VideoMetadataHistory {
   id           String   @id @default(cuid())
-  youtubeId    String   @unique
+  videoId      String
+  video        Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
   title        String
   description  String?  @db.Text
   thumbnailUrl String?
-  duration     String?
   publishedAt  DateTime
-  transcript   String?  @db.Text
-  processed    Boolean  @default(false)
-  repair       Repair?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  
+  snapshotAt   DateTime @default(now())
+  
+  @@index([videoId])
+  @@index([snapshotAt])
 }
 
 model Repair {
