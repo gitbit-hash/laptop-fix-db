@@ -8,6 +8,7 @@ export default function SyncPage() {
   const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [fetchAll, setFetchAll] = useState(false);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -18,7 +19,10 @@ export default function SyncPage() {
       const res = await fetch("/api/videos/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ maxResults: 50 }),
+        body: JSON.stringify({
+          maxResults: fetchAll ? 50 : 50,
+          fetchAll: fetchAll
+        }),
       });
 
       const data = await res.json();
@@ -45,9 +49,38 @@ export default function SyncPage() {
             Manual Video Sync
           </h2>
           <p className="text-gray-600 mb-6">
-            Manually fetch the latest videos from the Electronics Repair School YouTube
-            channel. This will fetch up to 50 videos and update existing ones.
+            Manually fetch videos from the Electronics Repair School YouTube
+            channel. You can fetch the latest 50 videos or all historical videos from the channel.
           </p>
+
+          {/* Fetch All Checkbox */}
+          <div className="mb-6">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={fetchAll}
+                onChange={(e) => setFetchAll(e.target.checked)}
+                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+              />
+              <div>
+                <span className="font-medium text-gray-900">
+                  Fetch All Videos (Historical)
+                </span>
+                <p className="text-sm text-gray-600">
+                  Fetch all videos from the channel, not just the latest 50. This may take several minutes.
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {fetchAll && (
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                ⚠️ <strong>Note:</strong> This will fetch up to 500 videos from the channel.
+                This process may take 5-10 minutes depending on how many new videos are found.
+              </p>
+            </div>
+          )}
 
           <button
             onClick={handleSync}
@@ -57,10 +90,10 @@ export default function SyncPage() {
             {syncing ? (
               <span className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Syncing...
+                {fetchAll ? 'Fetching All Videos...' : 'Syncing...'}
               </span>
             ) : (
-              "Start Sync"
+              fetchAll ? 'Fetch All Videos' : 'Sync Latest 50 Videos'
             )}
           </button>
 
@@ -85,6 +118,11 @@ export default function SyncPage() {
                 <p>
                   <strong>Videos updated:</strong> {result.stats.updated}
                 </p>
+                {result.hasMore && (
+                  <p className="text-yellow-700 mt-2">
+                    ℹ️ More videos available. The sync stopped at the 500 video limit.
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => router.push("/admin/videos")}
@@ -100,8 +138,8 @@ export default function SyncPage() {
       <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
         <h3 className="font-semibold text-blue-900 mb-2">ℹ️ Automatic Sync</h3>
         <p className="text-blue-800 text-sm">
-          Videos are automatically synced daily at 2:00 AM UTC via Vercel Cron. This
-          manual sync is useful for immediate updates.
+          Videos are automatically synced daily at 2:00 AM UTC via Vercel Cron (latest 50 videos). This
+          manual sync is useful for immediate updates or fetching historical content.
         </p>
       </div>
     </div>

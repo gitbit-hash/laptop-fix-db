@@ -26,20 +26,52 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const maxResults = body.maxResults || 50;
+    const pageToken = body.pageToken; // For pagination
+    const fetchAll = body.fetchAll || false; // Fetch all videos from channel
 
-    console.log(`Manually fetching up to ${maxResults} videos...`);
+    console.log(`Manually fetching up to ${maxResults} videos...${pageToken ? ` (pageToken: ${pageToken})` : ''}`);
 
-    // Fetch videos from YouTube
-    const videos = await getChannelVideos(channelId, maxResults);
-
-    console.log(`Found ${videos.length} videos`);
-
+    let allVideos: any[] = [];
+    let currentPageToken: string | undefined = pageToken;
     let savedCount = 0;
     let updatedCount = 0;
-    let skippedCount = 0;
+    let totalFetched = 0;
+
+    if (fetchAll) {
+      // Fetch all videos by following pagination
+      console.log("Fetching ALL videos from channel...");
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await getChannelVideos(channelId, 50, currentPageToken);
+        allVideos.push(...result.videos);
+        totalFetched += result.videos.length;
+
+        console.log(`Fetched ${result.videos.length} videos (total: ${totalFetched})`);
+
+        if (result.nextPageToken) {
+          currentPageToken = result.nextPageToken;
+        } else {
+          hasMore = false;
+        }
+
+        // Safety limit to prevent infinite loops
+        if (totalFetched >= 500) {
+          console.log("Reached 500 video limit, stopping...");
+          break;
+        }
+      }
+
+      console.log(`Total videos fetched: ${allVideos.length}`);
+    } else {
+      // Fetch single page
+      const result = await getChannelVideos(channelId, maxResults, pageToken);
+      allVideos = result.videos;
+      currentPageToken = result.nextPageToken;
+    }
 
     // Save or update videos in database
-    for (const videoData of videos) {
+    for (const videoData of allVideos) {
       const existing = await prisma.video.findUnique({
         where: { youtubeId: videoData.youtubeId },
       });
@@ -96,11 +128,12 @@ export async function POST(request: Request) {
       success: true,
       message: "Manual sync completed",
       stats: {
-        total: videos.length,
+        total: allVideos.length,
         saved: savedCount,
         updated: updatedCount,
-        skipped: skippedCount,
       },
+      nextPageToken: currentPageToken,
+      hasMore: !!currentPageToken,
     });
   } catch (error) {
     console.error("Error in manual video sync:", error);

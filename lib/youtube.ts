@@ -21,10 +21,11 @@ export interface VideoData {
  */
 export async function getChannelVideos(
   channelId: string,
-  maxResults: number = 50
-): Promise<VideoData[]> {
+  maxResults: number = 50,
+  pageToken?: string
+): Promise<{ videos: VideoData[]; nextPageToken?: string }> {
   try {
-    console.log(`Searching for videos in channel: ${channelId}`);
+    console.log(`Searching for videos in channel: ${channelId}${pageToken ? ` (pageToken: ${pageToken})` : ''}`);
 
     const response = await youtube.search.list({
       part: ["snippet"],
@@ -32,11 +33,12 @@ export async function getChannelVideos(
       maxResults,
       order: "date",
       type: ["video"],
+      pageToken,
     });
 
     if (!response.data.items || response.data.items.length === 0) {
       console.log("No videos found in search results");
-      return [];
+      return { videos: [] };
     }
 
     console.log(`Found ${response.data.items.length} videos from search`);
@@ -49,7 +51,7 @@ export async function getChannelVideos(
 
     if (videoIds.length === 0) {
       console.log("No valid video IDs extracted");
-      return [];
+      return { videos: [] };
     }
 
     // Get detailed video information
@@ -61,7 +63,7 @@ export async function getChannelVideos(
 
     if (!detailsResponse.data.items || detailsResponse.data.items.length === 0) {
       console.log("No video details returned");
-      return [];
+      return { videos: [] };
     }
 
     console.log(`Got details for ${detailsResponse.data.items.length} videos`);
@@ -75,7 +77,10 @@ export async function getChannelVideos(
       publishedAt: new Date(video.snippet?.publishedAt || Date.now()),
     }));
 
-    return videos;
+    return {
+      videos,
+      nextPageToken: response.data.nextPageToken || undefined,
+    };
   } catch (error) {
     console.error("Error fetching channel videos:", error);
     if (error && typeof error === 'object' && 'message' in error) {
